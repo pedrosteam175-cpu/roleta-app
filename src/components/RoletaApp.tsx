@@ -8,29 +8,15 @@ import WithdrawModal from './WithdrawModal';
 import HistoryModal from './HistoryModal';
 import AffiliateModal from './AffiliateModal';
 
-
-interface WithdrawModalProps {
-
-  balance:number;
-
-  onClose:()=>void;
-
-  onSuccess:(newBalance:number)=>void;
-
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  cpf?: string;
+  balance: number;
+  bonusBalance?: number;
+  affiliateCode: string;
 }
-
-
-
-export default function WithdrawModal({
-
-  balance,
-
-  onClose,
-
-  onSuccess,
-
-}:WithdrawModalProps){
-
 
   const [amount,setAmount] = useState('');
 
