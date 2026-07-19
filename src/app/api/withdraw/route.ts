@@ -3,7 +3,6 @@ import { db } from '@/db';
 import { users, transactions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { getCurrentUser, generateId } from '@/lib/auth';
-import { createPaypalPayout } from '@/lib/paypal';
 
 
 export async function POST(req: NextRequest) {
@@ -16,81 +15,172 @@ export async function POST(req: NextRequest) {
     if (!authUser) {
 
       return NextResponse.json(
-        {
-          error:'Não autenticado'
-        },
-        {
-          status:401
-        }
+        { error: 'Não autenticado' },
+        { status:401 }
       );
 
     }
-
 
 
     const body = await req.json();
 
 
-    const {
-      amount,
-      paypalEmail
-    } = body;
+    const amount = Number(body.amount);
+    const paypalEmail = body.paypalEmail;
 
 
 
-    const value = Number(amount);
-
-
-
-    if(!value || value <= 0){
+    if (!amount || amount <= 0) {
 
       return NextResponse.json(
-        {
-          error:'Valor inválido'
-        },
-        {
-          status:400
-        }
+        { error:'Valor inválido' },
+        { status:400 }
       );
 
     }
 
 
 
-    if(!paypalEmail){
+    if (!paypalEmail) {
 
       return NextResponse.json(
-        {
-          error:'E-mail PayPal obrigatório'
-        },
-        {
-          status:400
-        }
+        { error:'Email PayPal obrigatório' },
+        { status:400 }
       );
 
     }
 
 
 
-    const [user] =
-      await db
+    const [user] = await db
       .select()
       .from(users)
       .where(
-        eq(
-          users.id,
-          authUser.id
-        )
+        eq(users.id, authUser.id)
       );
 
 
 
-    if(!user){
+    if (!user) {
 
       return NextResponse.json(
-        {
-          error:'Usuário não encontrado'
-        },
-        {
-          status:404
-        }
+        { error:'Usuário não encontrado' },
+        { status:404 }
+      );
+
+    }
+
+
+
+    if (user.balance < amount) {
+
+      return NextResponse.json(
+        { error:'Saldo insuficiente' },
+        { status:400 }
+      );
+
+    }
+
+
+
+    /*
+      AQUI ENTRA O PAYPAL PAYOUTS
+
+      Depois que configurar:
+      await createPayPalPayout({
+        email: paypalEmail,
+        amount
+      });
+
+    */
+
+
+
+    const newBalance =
+      Number(
+        (user.balance - amount)
+        .toFixed(2)
+      );
+
+
+
+    await db
+      .update(users)
+      .set({
+
+        balance:newBalance,
+
+        totalWithdrawn:
+          user.totalWithdrawn + amount,
+
+        updatedAt:new Date()
+
+      })
+
+      .where(
+        eq(users.id,user.id)
+      );
+
+
+
+
+    await db.insert(transactions)
+    .values({
+
+      id:generateId(),
+
+      userId:user.id,
+
+      type:'withdrawal',
+
+      status:'pending',
+
+      amount,
+
+      pixKey:null,
+
+      pixName:paypalEmail,
+
+      pixCpf:null,
+
+      description:
+        `Saque PayPal $${amount}`
+
+    });
+
+
+
+    return NextResponse.json({
+
+      success:true,
+
+      newBalance
+
+    });
+
+
+
+  } catch(error) {
+
+
+    console.error(
+      'Withdraw error:',
+      error
+    );
+
+
+    return NextResponse.json(
+
+      {
+        error:'Erro ao processar saque'
+      },
+
+      {
+        status:500
+      }
+
+    );
+
+  }
+
+           }
