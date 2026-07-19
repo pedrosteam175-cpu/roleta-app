@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@paypal/payouts-sdk':
+        specifier: ^1.1.1
+        version: 1.1.1
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.2(@cloudflare/workers-types@4.20260702.1)(postgres@3.4.9)
@@ -922,6 +925,14 @@ packages:
   '@nolyfill/is-core-module@1.0.39':
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
+
+  '@paypal/payouts-sdk@1.1.1':
+    resolution: {integrity: sha512-m8hICfBjrf8WKXYGt84wVS7YLa+exB/HQwItn33ArmDDH1Hno0vqwwE2oY7TNTuKcBpxSE75D9KMrtNlVN9kZQ==}
+    engines: {node: '>=8'}
+
+  '@paypal/paypalhttp@1.0.1':
+    resolution: {integrity: sha512-DC7AHxTT7drF6dUi3YaFdPVuT15sIkpD5H2eHmdtFgxM4UanS1o1ZDfMhR9mpxd8o+X6pz2r+EZVRRq+n1cssQ==}
+    engines: {node: '>=4'}
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
@@ -3249,6 +3260,12 @@ snapshots:
       fastq: 1.20.1
 
   '@nolyfill/is-core-module@1.0.39': {}
+
+  '@paypal/payouts-sdk@1.1.1':
+    dependencies:
+      '@paypal/paypalhttp': 1.0.1
+
+  '@paypal/paypalhttp@1.0.1': {}
 
   '@rtsao/scc@1.1.0': {}
 
