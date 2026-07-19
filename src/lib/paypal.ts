@@ -1,162 +1,146 @@
-import paypal from '@paypal/checkout-server-sdk';
+// src/lib/paypal.ts
+
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
+const PAYPAL_SECRET = process.env.PAYPAL_SECRET!;
+
+const PAYPAL_BASE =
+  process.env.PAYPAL_MODE === 'live'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com';
 
 
-function getPayPalEnvironment(){
 
-  const clientId = process.env.PAYPAL_CLIENT_ID;
+async function getAccessToken() {
 
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+  const auth =
+    Buffer.from(
+      `${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`
+    ).toString('base64');
 
 
-  if(!clientId || !clientSecret){
+  const res = await fetch(
+    `${PAYPAL_BASE}/v1/oauth2/token`,
+    {
+      method:'POST',
+      headers:{
+        Authorization:`Basic ${auth}`,
+        'Content-Type':
+          'application/x-www-form-urlencoded'
+      },
+      body:
+        'grant_type=client_credentials'
+    }
+  );
 
+
+  const data = await res.json();
+
+
+  if(!data.access_token){
     throw new Error(
-      'PayPal não configurado'
+      'Falha ao autenticar PayPal'
     );
-
   }
 
 
-
-  if(process.env.PAYPAL_MODE === 'live'){
-
-    return new paypal.core.LiveEnvironment(
-      clientId,
-      clientSecret
-    );
-
-  }
-
-
-
-  return new paypal.core.SandboxEnvironment(
-    clientId,
-    clientSecret
-  );
-
-
+  return data.access_token;
 }
 
 
 
-function getClient(){
-
-  const environment =
-    getPayPalEnvironment();
-
-
-  return new paypal.core.PayPalHttpClient(
-    environment
-  );
-
-}
-
-
-
-
-interface PayPalPayoutProps {
-
-  email:string;
-
-  amount:number;
-
-  note?:string;
-
-}
-
-
-
-export async function createPayPalPayout({
+export async function createPaypalPayout({
 
   email,
+  amount
 
-  amount,
+}:{
 
-  note='Pagamento'
+  email:string;
+  amount:number;
 
-}:PayPalPayoutProps){
-
-
-  const client =
-    getClient();
+}) {
 
 
-
-  const request:any =
-    new paypal.core.PayPalHttpRequest(
-      '/v1/payments/payouts',
-      'POST'
-    );
+  const token =
+    await getAccessToken();
 
 
 
-  request.requestBody = {
+  const res = await fetch(
+    `${PAYPAL_BASE}/v1/payments/payouts`,
+    {
+      method:'POST',
+
+      headers:{
+        Authorization:
+          `Bearer ${token}`,
+
+        'Content-Type':
+          'application/json'
+      },
 
 
-    sender_batch_header:{
+      body:JSON.stringify({
 
-      sender_batch_id:
-        `roleta_${Date.now()}`,
+        sender_batch_header:{
 
-      email_subject:
-        'Você recebeu um pagamento',
+          sender_batch_id:
+            `withdraw-${Date.now()}`,
 
-      email_message:
-        note
-
-    },
-
-
-    items:[
-
-      {
-
-        recipient_type:'EMAIL',
-
-        amount:{
-
-          value:
-            amount.toFixed(2),
-
-          currency:'USD'
+          email_subject:
+            'Você recebeu um pagamento',
 
         },
 
 
-        receiver:
-          email,
+        items:[{
+
+          recipient_type:'EMAIL',
+
+          amount:{
+            value:
+              amount.toFixed(2),
+
+            currency:
+              'USD'
+          },
+
+          receiver:
+            email,
+
+          note:
+            'Saque Roleta da Sorte'
+
+        }]
+
+      })
+
+    }
+  );
 
 
-        note
 
-      }
-
-    ]
-
-
-  };
+  const data =
+    await res.json();
 
 
 
-  const response =
-    await client.execute(request);
+  if(!res.ok){
+
+    console.error(
+      'PayPal payout error',
+      data
+    );
+
+    throw new Error(
+      data.message ||
+      'Erro PayPal'
+    );
+
+  }
 
 
 
-  return {
+  return data;
 
-    batchId:
-      response.result
-      .batch_header
-      .payout_batch_id,
-
-
-    status:
-      response.result
-      .batch_header
-      .batch_status
-
-  };
-
-
-}
+        }
