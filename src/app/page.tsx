@@ -1,8 +1,7 @@
-'use client';
-import dynamic from 'next/dynamic';
-
-const RoletaApp = dynamic(() => import('@/components/RoletaApp'), { ssr: false });
+import RoletaApp from '@/components/RoletaApp';
 
 export default function Home() {
-  return <RoletaApp />;
+  return (
+    <RoletaApp />
+  );
 }
