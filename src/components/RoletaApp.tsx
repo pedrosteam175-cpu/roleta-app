@@ -1,6 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import WheelCanvas from './WheelCanvas';
+import AuthModal from './AuthModal';
+import DepositModal from './DepositModal';
+import WithdrawModal from './WithdrawModal';
+import HistoryModal from './HistoryModal';
+import AffiliateModal from './AffiliateModal';
 
 
 interface WithdrawModalProps {
