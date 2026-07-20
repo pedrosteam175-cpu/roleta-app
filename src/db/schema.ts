@@ -61,7 +61,6 @@ export const users = pgTable("users", {
 });
 
 
-
 // =====================================
 // TRANSACTIONS
 // =====================================
@@ -108,7 +107,6 @@ export const transactions = pgTable("transactions", {
 });
 
 
-
 // =====================================
 // APP CONFIG
 // STRIPE / ASAAS / GERAL
@@ -137,9 +135,8 @@ export const appConfig = pgTable("app_config", {
 });
 
 
-
 // =====================================
-// PAYPAL PAYOUT SETTINGS
+// PAYPAL PAYOUT
 // =====================================
 
 export const paypalSettings = pgTable("paypal_settings", {
@@ -171,9 +168,8 @@ export const paypalSettings = pgTable("paypal_settings", {
 });
 
 
-
 // =====================================
-// SPINS
+// SPINS ROLETA
 // =====================================
 
 export const spins = pgTable("spins", {
@@ -199,9 +195,8 @@ export const spins = pgTable("spins", {
 });
 
 
-
 // =====================================
-// AFFILIATES
+// AFILIADOS
 // =====================================
 
 export const affiliateReferrals = pgTable(
