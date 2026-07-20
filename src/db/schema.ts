@@ -12,54 +12,53 @@ import {
 // USERS
 // =====================================
 
-export const users = pgTable(
-  "users",
-  {
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
+export const users = pgTable("users", {
 
-    name: text("name")
-      .notNull(),
+  id: uuid("id")
+    .defaultRandom()
+    .primaryKey(),
 
-    email: text("email")
-      .notNull()
-      .unique(),
+  name: text("name")
+    .notNull(),
 
-    password: text("password")
-      .notNull(),
+  email: text("email")
+    .notNull()
+    .unique(),
 
-    cpf: text("cpf"),
+  password: text("password")
+    .notNull(),
 
-    balance: numeric("balance")
-      .default("0")
-      .notNull(),
+  cpf: text("cpf"),
 
-    totalDeposited: numeric("total_deposited")
-      .default("0")
-      .notNull(),
+  balance: numeric("balance")
+    .default("0")
+    .notNull(),
 
-    totalWithdrawn: numeric("total_withdrawn")
-      .default("0")
-      .notNull(),
+  totalDeposited: numeric("total_deposited")
+    .default("0")
+    .notNull(),
 
-    referralCode: text("referral_code"),
+  totalWithdrawn: numeric("total_withdrawn")
+    .default("0")
+    .notNull(),
 
-    referredBy: text("referred_by"),
+  referralCode: text("referral_code"),
 
-    isAdmin: boolean("is_admin")
-      .default(false)
-      .notNull(),
+  referredBy: text("referred_by"),
 
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
+  isAdmin: boolean("is_admin")
+    .default(false)
+    .notNull(),
 
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull()
-  }
-);
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull(),
+
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+
+});
 
 
 
@@ -67,121 +66,148 @@ export const users = pgTable(
 // TRANSACTIONS
 // =====================================
 
-export const transactions = pgTable(
-  "transactions",
-  {
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
+export const transactions = pgTable("transactions", {
 
-    userId: uuid("user_id")
-      .notNull(),
+  id: uuid("id")
+    .defaultRandom()
+    .primaryKey(),
 
-    type: text("type")
-      .notNull(),
+  userId: uuid("user_id")
+    .notNull(),
 
-    amount: numeric("amount")
-      .notNull(),
+  type: text("type")
+    .notNull(),
 
-    status: text("status")
-      .default("pending")
-      .notNull(),
+  amount: numeric("amount")
+    .notNull(),
 
-    pixKey: text("pix_key"),
+  status: text("status")
+    .default("pending")
+    .notNull(),
 
-    pixName: text("pix_name"),
+  pixKey: text("pix_key"),
 
-    pixCpf: text("pix_cpf"),
+  pixName: text("pix_name"),
 
-    paypalEmail: text("paypal_email"),
+  pixCpf: text("pix_cpf"),
 
-    externalId: text("external_id"),
+  paypalEmail: text("paypal_email"),
 
-    description: text("description"),
+  externalId: text("external_id"),
 
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
+  description: text("description"),
 
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull()
-  }
-);
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull(),
 
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
 
-
-// =====================================
-// PAYPAL PAYOUT CONFIG
-// =====================================
-
-export const paypalSettings = pgTable(
-  "paypal_settings",
-  {
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
-
-    clientId: text("client_id")
-      .notNull(),
-
-    clientSecret: text("client_secret")
-      .notNull(),
-
-    mode: text("mode")
-      .default("sandbox")
-      .notNull(),
-
-    senderEmail: text("sender_email"),
-
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull()
-  }
-);
+});
 
 
 
 // =====================================
-// SPINS ROLETA
+// APP CONFIG
+// STRIPE / ASAAS / GERAL
 // =====================================
 
-export const spins = pgTable(
-  "spins",
-  {
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
+export const appConfig = pgTable("app_config", {
 
-    userId: uuid("user_id")
-      .notNull(),
+  id: uuid("id")
+    .defaultRandom()
+    .primaryKey(),
 
-    prize: text("prize")
-      .notNull(),
+  key: text("key")
+    .notNull()
+    .unique(),
 
-    amount: numeric("amount")
-      .default("0")
-      .notNull(),
+  value: text("value"),
 
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull()
-  }
-);
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull(),
+
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+
+});
 
 
 
 // =====================================
-// AFILIADOS
+// PAYPAL PAYOUT SETTINGS
+// =====================================
+
+export const paypalSettings = pgTable("paypal_settings", {
+
+  id: uuid("id")
+    .defaultRandom()
+    .primaryKey(),
+
+  clientId: text("client_id")
+    .notNull(),
+
+  clientSecret: text("client_secret")
+    .notNull(),
+
+  mode: text("mode")
+    .default("sandbox")
+    .notNull(),
+
+  senderEmail: text("sender_email"),
+
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull(),
+
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .notNull()
+
+});
+
+
+
+// =====================================
+// SPINS
+// =====================================
+
+export const spins = pgTable("spins", {
+
+  id: uuid("id")
+    .defaultRandom()
+    .primaryKey(),
+
+  userId: uuid("user_id")
+    .notNull(),
+
+  prize: text("prize")
+    .notNull(),
+
+  amount: numeric("amount")
+    .default("0")
+    .notNull(),
+
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull()
+
+});
+
+
+
+// =====================================
+// AFFILIATES
 // =====================================
 
 export const affiliateReferrals = pgTable(
   "affiliate_referrals",
   {
+
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
@@ -199,34 +225,6 @@ export const affiliateReferrals = pgTable(
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull()
-  }
-);
 
-
-
-// =====================================
-// APP CONFIG (STRIPE / ASAAS)
-// =====================================
-
-export const appConfig = pgTable(
-  "app_config",
-  {
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
-
-    key: text("key")
-      .notNull()
-      .unique(),
-
-    value: text("value"),
-
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull()
   }
 );
