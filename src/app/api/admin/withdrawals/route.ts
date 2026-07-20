@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users, transactions } from '@/db/schema';
-import { eq, desc } from 'drizzle-orm';
-import { checkAdminAuth } from '@/lib/adminAuth';
-import { getAsaasConfig, createPixTransfer } from '@/lib/asaas';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { users, transactions } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { checkAdminAuth } from "@/lib/adminAuth";
+import { getAsaasConfig, createPixTransfer } from "@/lib/asaas";
 
 
 // =====================================
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   if (!checkAdminAuth(req)) {
     return NextResponse.json(
-      { error: 'Não autorizado' },
+      { error: "Não autorizado" },
       { status: 401 }
     );
   }
@@ -33,13 +33,11 @@ export async function GET(req: NextRequest) {
 
         status: transactions.status,
 
-
         pixKey: transactions.pixKey,
 
         pixName: transactions.pixName,
 
         pixCpf: transactions.pixCpf,
-
 
         description: transactions.description,
 
@@ -53,7 +51,6 @@ export async function GET(req: NextRequest) {
         userBalance: users.balance,
 
       })
-
       .from(transactions)
 
       .innerJoin(
@@ -62,7 +59,7 @@ export async function GET(req: NextRequest) {
       )
 
       .where(
-        eq(transactions.type, 'withdrawal')
+        eq(transactions.type, "withdrawal")
       )
 
       .orderBy(
@@ -78,27 +75,32 @@ export async function GET(req: NextRequest) {
     });
 
 
-  } catch (err) {
+  } catch (error) {
 
     console.error(
-      'Admin withdrawals GET error:',
-      err
+      "Admin withdrawals GET:",
+      error
     );
 
 
     return NextResponse.json(
-      { error: 'Erro interno' },
-      { status: 500 }
+      {
+        error:"Erro interno"
+      },
+      {
+        status:500
+      }
     );
-
   }
 
 }
 
 
 
+
+
 // =====================================
-// APROVAR / REJEITAR SAQUE
+// APROVAR / RECUSAR SAQUE
 // =====================================
 
 export async function POST(req: NextRequest) {
@@ -107,8 +109,12 @@ export async function POST(req: NextRequest) {
   if (!checkAdminAuth(req)) {
 
     return NextResponse.json(
-      { error: 'Não autorizado' },
-      { status: 401 }
+      {
+        error:"Não autorizado"
+      },
+      {
+        status:401
+      }
     );
 
   }
@@ -118,25 +124,32 @@ export async function POST(req: NextRequest) {
   try {
 
 
+    const body = await req.json();
+
+
     const {
       transactionId,
       action
-
-    } = await req.json();
+    } = body;
 
 
 
     if (
       !transactionId ||
-      !['approve', 'reject'].includes(action)
+      !["approve","reject"].includes(action)
     ) {
 
       return NextResponse.json(
-        { error: 'Dados inválidos' },
-        { status: 400 }
+        {
+          error:"Dados inválidos"
+        },
+        {
+          status:400
+        }
       );
 
     }
+
 
 
 
@@ -144,7 +157,10 @@ export async function POST(req: NextRequest) {
       .select()
       .from(transactions)
       .where(
-        eq(transactions.id, transactionId)
+        eq(
+          transactions.id,
+          transactionId
+        )
       );
 
 
@@ -152,22 +168,31 @@ export async function POST(req: NextRequest) {
     if (!tx) {
 
       return NextResponse.json(
-        { error: 'Transação não encontrada' },
-        { status: 404 }
+        {
+          error:"Saque não encontrado"
+        },
+        {
+          status:404
+        }
       );
 
     }
 
 
 
-    if (tx.status !== 'pending') {
+    if (tx.status !== "pending") {
 
       return NextResponse.json(
-        { error: 'Transação já processada' },
-        { status: 400 }
+        {
+          error:"Saque já processado"
+        },
+        {
+          status:400
+        }
       );
 
     }
+
 
 
 
@@ -175,7 +200,10 @@ export async function POST(req: NextRequest) {
       .select()
       .from(users)
       .where(
-        eq(users.id, tx.userId)
+        eq(
+          users.id,
+          tx.userId
+        )
       );
 
 
@@ -183,8 +211,12 @@ export async function POST(req: NextRequest) {
     if (!user) {
 
       return NextResponse.json(
-        { error: 'Usuário não encontrado' },
-        { status: 404 }
+        {
+          error:"Usuário não encontrado"
+        },
+        {
+          status:404
+        }
       );
 
     }
@@ -192,43 +224,41 @@ export async function POST(req: NextRequest) {
 
 
 
-    // =====================================
-    // REJEITAR SAQUE
-    // DEVOLVE SALDO
-    // =====================================
+    // ===============================
+    // RECUSAR SAQUE
+    // ===============================
 
-    if (action === 'reject') {
+    if (action === "reject") {
 
 
       await db
         .update(users)
         .set({
 
-          balance: (
-            Number(user.balance) +
-            Number(tx.amount)
-
-          ).toString(),
-
-
-
-          totalWithdrawn: Math.max(
-
-            0,
-
-            Number(user.totalWithdrawn) -
-            Number(tx.amount)
-
-          ).toString(),
+          balance:
+            (
+              Number(user.balance) +
+              Number(tx.amount)
+            ).toString(),
 
 
+          totalWithdrawn:
+            Math.max(
+              0,
+              Number(user.totalWithdrawn) -
+              Number(tx.amount)
+            ).toString(),
 
-          updatedAt: new Date(),
+
+          updatedAt:new Date()
 
         })
 
         .where(
-          eq(users.id, user.id)
+          eq(
+            users.id,
+            user.id
+          )
         );
 
 
@@ -238,24 +268,26 @@ export async function POST(req: NextRequest) {
         .update(transactions)
         .set({
 
-          status: 'cancelled',
+          status:"cancelled",
 
-          updatedAt: new Date(),
+          updatedAt:new Date()
 
         })
 
         .where(
-          eq(transactions.id, tx.id)
+          eq(
+            transactions.id,
+            tx.id
+          )
         );
-
 
 
 
       return NextResponse.json({
 
-        success: true,
+        success:true,
 
-        action: 'rejected'
+        action:"rejected"
 
       });
 
@@ -266,17 +298,15 @@ export async function POST(req: NextRequest) {
 
 
 
-    // =====================================
-    // APROVAR SAQUE
-    // ENVIA PIX ASAAS
-    // =====================================
+
+    // ===============================
+    // APROVAR PIX ASAAS
+    // ===============================
 
 
     const {
       apiKey
-
     } = await getAsaasConfig();
-
 
 
 
@@ -284,6 +314,30 @@ export async function POST(req: NextRequest) {
       apiKey &&
       tx.pixKey
     ) {
+
+
+      const cpf =
+        tx.pixCpf ??
+        user.cpf;
+
+
+
+      if (!cpf) {
+
+
+        return NextResponse.json(
+          {
+            error:
+            "Usuário sem CPF cadastrado"
+          },
+          {
+            status:400
+          }
+        );
+
+
+      }
+
 
 
       try {
@@ -296,9 +350,7 @@ export async function POST(req: NextRequest) {
             user.name,
 
 
-          cpf:
-            tx.pixCpf ??
-            user.cpf,
+          cpf,
 
 
           pixKey:
@@ -310,18 +362,19 @@ export async function POST(req: NextRequest) {
 
 
           description:
-            'Saque Roleta da Sorte',
+            "Saque Roleta da Sorte"
+
 
         });
 
 
 
-      } catch (e) {
+      } catch(error) {
 
 
         console.error(
-          'PIX transfer error:',
-          e
+          "Erro PIX:",
+          error
         );
 
 
@@ -329,12 +382,11 @@ export async function POST(req: NextRequest) {
 
           {
             error:
-              'Falha ao enviar PIX: ' +
-              String(e)
+            "Falha ao enviar PIX"
           },
 
           {
-            status: 500
+            status:500
           }
 
         );
@@ -342,8 +394,9 @@ export async function POST(req: NextRequest) {
 
       }
 
-
     }
+
+
 
 
 
@@ -351,16 +404,20 @@ export async function POST(req: NextRequest) {
 
     await db
       .update(transactions)
+
       .set({
 
-        status: 'completed',
+        status:"completed",
 
-        updatedAt: new Date(),
+        updatedAt:new Date()
 
       })
 
       .where(
-        eq(transactions.id, tx.id)
+        eq(
+          transactions.id,
+          tx.id
+        )
       );
 
 
@@ -369,37 +426,37 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
 
-      success: true,
+      success:true,
 
-      action: 'approved'
+      action:"approved"
 
     });
 
 
 
 
-  } catch (err) {
+
+  } catch(error) {
 
 
     console.error(
-      'Admin withdrawal POST error:',
-      err
+      "Admin withdrawal POST:",
+      error
     );
-
 
 
     return NextResponse.json(
 
       {
-        error: 'Erro interno'
+        error:"Erro interno"
       },
 
       {
-        status: 500
+        status:500
       }
 
     );
 
   }
 
-}
+      }
