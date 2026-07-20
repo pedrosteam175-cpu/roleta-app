@@ -8,6 +8,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 
+
 // =====================================
 // USERS
 // =====================================
@@ -20,12 +21,15 @@ export const users = pgTable(
       .defaultRandom()
       .primaryKey(),
 
+
     name: text("name")
       .notNull(),
+
 
     email: text("email")
       .notNull()
       .unique(),
+
 
     password: text("password")
       .notNull(),
@@ -34,21 +38,27 @@ export const users = pgTable(
     cpf: text("cpf"),
 
 
-    // carteira
+
+    // carteira principal
+
     balance: numeric("balance")
       .default("0")
       .notNull(),
 
 
-    // bônus
+
+    // saldo bônus
+
     bonusBalance: numeric("bonus_balance")
       .default("0")
       .notNull(),
 
 
+
     totalDeposited: numeric("total_deposited")
       .default("0")
       .notNull(),
+
 
 
     totalWithdrawn: numeric("total_withdrawn")
@@ -57,12 +67,22 @@ export const users = pgTable(
 
 
 
-    // afiliado
+
+    // afiliados
+
     referralCode: text("referral_code"),
+
 
     affiliateCode: text("affiliate_code"),
 
+
+    affiliateLevel: text("affiliate_level")
+      .default("bronze")
+      .notNull(),
+
+
     referredBy: text("referred_by"),
+
 
 
 
@@ -72,9 +92,11 @@ export const users = pgTable(
 
 
 
+
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
+
 
 
     updatedAt: timestamp("updated_at")
@@ -83,6 +105,7 @@ export const users = pgTable(
 
   }
 );
+
 
 
 
@@ -104,12 +127,15 @@ export const transactions = pgTable(
       .notNull(),
 
 
+
     type: text("type")
       .notNull(),
 
 
+
     amount: numeric("amount")
       .notNull(),
+
 
 
     status: text("status")
@@ -128,22 +154,27 @@ export const transactions = pgTable(
 
 
 
+
     // PAYPAL
 
     paypalEmail: text("paypal_email"),
 
 
 
+
     externalId: text("external_id"),
+
 
 
     description: text("description"),
 
 
 
+
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
+
 
 
     updatedAt: timestamp("updated_at")
@@ -156,9 +187,11 @@ export const transactions = pgTable(
 
 
 
+
+
 // =====================================
-// CONFIG ADMIN KEY VALUE
-// Stripe / Asaas / Geral
+// APP CONFIG ADMIN
+// KEY / VALUE
 // =====================================
 
 export const appConfig = pgTable(
@@ -179,9 +212,11 @@ export const appConfig = pgTable(
 
 
 
+
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
+
 
 
     updatedAt: timestamp("updated_at")
@@ -190,6 +225,9 @@ export const appConfig = pgTable(
 
   }
 );
+
+
+
 
 
 
@@ -207,12 +245,15 @@ export const paypalSettings = pgTable(
       .primaryKey(),
 
 
+
     clientId: text("client_id")
       .notNull(),
 
 
+
     clientSecret: text("client_secret")
       .notNull(),
+
 
 
     mode: text("mode")
@@ -220,7 +261,9 @@ export const paypalSettings = pgTable(
       .notNull(),
 
 
+
     senderEmail: text("sender_email"),
+
 
 
 
@@ -229,12 +272,16 @@ export const paypalSettings = pgTable(
       .notNull(),
 
 
+
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
 
   }
 );
+
+
+
 
 
 
@@ -252,17 +299,21 @@ export const spins = pgTable(
       .primaryKey(),
 
 
+
     userId: uuid("user_id")
       .notNull(),
+
 
 
     prize: text("prize")
       .notNull(),
 
 
+
     amount: numeric("amount")
       .default("0")
       .notNull(),
+
 
 
 
@@ -272,6 +323,9 @@ export const spins = pgTable(
 
   }
 );
+
+
+
 
 
 
@@ -289,17 +343,21 @@ export const affiliateReferrals = pgTable(
       .primaryKey(),
 
 
+
     userId: uuid("user_id")
       .notNull(),
+
 
 
     referredUserId: uuid("referred_user_id")
       .notNull(),
 
 
+
     commission: numeric("commission")
       .default("0")
       .notNull(),
+
 
 
 
