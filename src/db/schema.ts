@@ -4,8 +4,8 @@ import {
   text,
   timestamp,
   numeric,
-  integer,
-  boolean
+  boolean,
+  integer
 } from "drizzle-orm/pg-core";
 
 
@@ -34,13 +34,16 @@ export const users = pgTable(
 
     cpf: text("cpf"),
 
+
     balance: numeric("balance")
       .default("0")
       .notNull(),
 
+
     totalDeposited: numeric("total_deposited")
       .default("0")
       .notNull(),
+
 
     totalWithdrawn: numeric("total_withdrawn")
       .default("0")
@@ -72,6 +75,7 @@ export const users = pgTable(
 
 
 
+
 // =====================================
 // TRANSACTIONS
 // =====================================
@@ -91,9 +95,6 @@ export const transactions = pgTable(
 
     type: text("type")
       .notNull(),
-      // deposit
-      // withdrawal
-      // spin
 
 
     amount: numeric("amount")
@@ -107,7 +108,9 @@ export const transactions = pgTable(
 
     pixKey: text("pix_key"),
 
+
     pixName: text("pix_name"),
+
 
     pixCpf: text("pix_cpf"),
 
@@ -136,12 +139,14 @@ export const transactions = pgTable(
 
 
 
+
+
 // =====================================
-// CONFIG ASAAS
+// CONFIG GERAL (STRIPE + ASAAS)
 // =====================================
 
-export const asaasConfig = pgTable(
-  "asaas_config",
+export const appConfig = pgTable(
+  "app_config",
   {
 
     id: uuid("id")
@@ -149,16 +154,25 @@ export const asaasConfig = pgTable(
       .primaryKey(),
 
 
-    apiKey: text("api_key")
-      .notNull(),
+    stripeSecretKey: text("stripe_secret_key"),
 
 
-    mode: text("mode")
-      .default("sandbox")
-      .notNull(),
+    stripeWebhookSecret: text("stripe_webhook_secret"),
+
+
+    asaasApiKey: text("asaas_api_key"),
+
+
+    asaasEnvironment: text("asaas_environment")
+      .default("sandbox"),
 
 
     createdAt: timestamp("created_at")
+      .defaultNow()
+      .notNull(),
+
+
+    updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull()
 
@@ -168,38 +182,10 @@ export const asaasConfig = pgTable(
 
 
 
-// =====================================
-// CONFIG STRIPE
-// =====================================
-
-export const stripeConfig = pgTable(
-  "stripe_config",
-  {
-
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
-
-
-    secretKey: text("secret_key")
-      .notNull(),
-
-
-    webhookSecret: text("webhook_secret"),
-
-
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull()
-
-  }
-);
-
-
 
 
 // =====================================
-// CONFIG PAYPAL
+// PAYPAL PAYOUT
 // =====================================
 
 export const paypalSettings = pgTable(
@@ -242,8 +228,10 @@ export const paypalSettings = pgTable(
 
 
 
+
+
 // =====================================
-// SPINS / ROLETA
+// SPINS DA ROLETA
 // =====================================
 
 export const spins = pgTable(
@@ -278,8 +266,10 @@ export const spins = pgTable(
 
 
 
+
+
 // =====================================
-// AFFILIATES
+// AFILIADOS
 // =====================================
 
 export const affiliates = pgTable(
