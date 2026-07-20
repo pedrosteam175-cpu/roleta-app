@@ -56,9 +56,10 @@ export const users = pgTable("users", {
 
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .notNull()
+    .notNull(),
 
 });
+
 
 
 // =====================================
@@ -84,17 +85,23 @@ export const transactions = pgTable("transactions", {
     .default("pending")
     .notNull(),
 
+
+  // PIX
   pixKey: text("pix_key"),
 
   pixName: text("pix_name"),
 
   pixCpf: text("pix_cpf"),
 
+
+  // PAYPAL
   paypalEmail: text("paypal_email"),
+
 
   externalId: text("external_id"),
 
   description: text("description"),
+
 
   createdAt: timestamp("created_at")
     .defaultNow()
@@ -102,14 +109,15 @@ export const transactions = pgTable("transactions", {
 
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .notNull()
+    .notNull(),
 
 });
 
 
+
 // =====================================
-// APP CONFIG
-// STRIPE / ASAAS / GERAL
+// CONFIG KEY/VALUE
+// usado pelo admin/config
 // =====================================
 
 export const appConfig = pgTable("app_config", {
@@ -124,19 +132,21 @@ export const appConfig = pgTable("app_config", {
 
   value: text("value"),
 
+
   createdAt: timestamp("created_at")
     .defaultNow()
     .notNull(),
 
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .notNull()
+    .notNull(),
 
 });
 
 
+
 // =====================================
-// PAYPAL PAYOUT
+// PAYPAL PAYOUT SETTINGS
 // =====================================
 
 export const paypalSettings = pgTable("paypal_settings", {
@@ -157,19 +167,21 @@ export const paypalSettings = pgTable("paypal_settings", {
 
   senderEmail: text("sender_email"),
 
+
   createdAt: timestamp("created_at")
     .defaultNow()
     .notNull(),
 
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .notNull()
+    .notNull(),
 
 });
 
 
+
 // =====================================
-// SPINS ROLETA
+// SPINS DA ROLETA
 // =====================================
 
 export const spins = pgTable("spins", {
@@ -190,9 +202,10 @@ export const spins = pgTable("spins", {
 
   createdAt: timestamp("created_at")
     .defaultNow()
-    .notNull()
+    .notNull(),
 
 });
+
 
 
 // =====================================
@@ -200,26 +213,29 @@ export const spins = pgTable("spins", {
 // =====================================
 
 export const affiliateReferrals = pgTable(
-  "affiliate_referrals",
-  {
+"affiliate_referrals",
+{
 
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
+  id: uuid("id")
+    .defaultRandom()
+    .primaryKey(),
 
-    userId: uuid("user_id")
-      .notNull(),
 
-    referredUserId: uuid("referred_user_id")
-      .notNull(),
+  userId: uuid("user_id")
+    .notNull(),
 
-    commission: numeric("commission")
-      .default("0")
-      .notNull(),
 
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull()
+  referredUserId: uuid("referred_user_id")
+    .notNull(),
 
-  }
-);
+
+  commission: numeric("commission")
+    .default("0")
+    .notNull(),
+
+
+  createdAt: timestamp("created_at")
+    .defaultNow()
+    .notNull(),
+
+});
