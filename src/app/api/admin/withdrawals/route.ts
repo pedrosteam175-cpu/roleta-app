@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   try {
 
-    const rows = await db
+    const withdrawals = await db
       .select({
 
         id: transactions.id,
@@ -51,6 +51,7 @@ export async function GET(req: NextRequest) {
         userBalance: users.balance,
 
       })
+
       .from(transactions)
 
       .innerJoin(
@@ -71,14 +72,16 @@ export async function GET(req: NextRequest) {
 
 
     return NextResponse.json({
-      withdrawals: rows
+      withdrawals
     });
 
 
-  } catch (error) {
+
+  } catch(error) {
+
 
     console.error(
-      "Admin withdrawals GET:",
+      "withdrawals GET error:",
       error
     );
 
@@ -91,6 +94,7 @@ export async function GET(req: NextRequest) {
         status:500
       }
     );
+
   }
 
 }
@@ -99,8 +103,9 @@ export async function GET(req: NextRequest) {
 
 
 
+
 // =====================================
-// APROVAR / RECUSAR SAQUE
+// APROVAR / REJEITAR SAQUE
 // =====================================
 
 export async function POST(req: NextRequest) {
@@ -124,20 +129,27 @@ export async function POST(req: NextRequest) {
   try {
 
 
-    const body = await req.json();
-
-
     const {
       transactionId,
       action
-    } = body;
+
+    } = await req.json();
+
 
 
 
     if (
+
       !transactionId ||
-      !["approve","reject"].includes(action)
+
+      ![
+        "approve",
+        "reject"
+
+      ].includes(action)
+
     ) {
+
 
       return NextResponse.json(
         {
@@ -148,7 +160,9 @@ export async function POST(req: NextRequest) {
         }
       );
 
+
     }
+
 
 
 
@@ -162,6 +176,7 @@ export async function POST(req: NextRequest) {
           transactionId
         )
       );
+
 
 
 
@@ -180,7 +195,10 @@ export async function POST(req: NextRequest) {
 
 
 
+
+
     if (tx.status !== "pending") {
+
 
       return NextResponse.json(
         {
@@ -192,6 +210,7 @@ export async function POST(req: NextRequest) {
       );
 
     }
+
 
 
 
@@ -208,7 +227,9 @@ export async function POST(req: NextRequest) {
 
 
 
+
     if (!user) {
+
 
       return NextResponse.json(
         {
@@ -219,38 +240,51 @@ export async function POST(req: NextRequest) {
         }
       );
 
+
     }
 
 
 
 
-    // ===============================
-    // RECUSAR SAQUE
-    // ===============================
+
+    // =====================================
+    // REJEITAR
+    // =====================================
+
 
     if (action === "reject") {
 
 
       await db
         .update(users)
+
         .set({
 
           balance:
             (
               Number(user.balance) +
               Number(tx.amount)
+
             ).toString(),
+
 
 
           totalWithdrawn:
+
             Math.max(
+
               0,
+
               Number(user.totalWithdrawn) -
+
               Number(tx.amount)
+
             ).toString(),
 
 
-          updatedAt:new Date()
+
+          updatedAt:
+            new Date()
 
         })
 
@@ -264,13 +298,17 @@ export async function POST(req: NextRequest) {
 
 
 
+
+
       await db
         .update(transactions)
+
         .set({
 
           status:"cancelled",
 
-          updatedAt:new Date()
+          updatedAt:
+            new Date()
 
         })
 
@@ -280,6 +318,7 @@ export async function POST(req: NextRequest) {
             tx.id
           )
         );
+
 
 
 
@@ -299,26 +338,39 @@ export async function POST(req: NextRequest) {
 
 
 
-    // ===============================
-    // APROVAR PIX ASAAS
-    // ===============================
+
+
+    // =====================================
+    // APROVAR PIX
+    // =====================================
 
 
     const {
       apiKey
+
     } = await getAsaasConfig();
 
 
 
+
+
     if (
+
       apiKey &&
+
       tx.pixKey
+
     ) {
 
 
+
       const cpf =
+
         tx.pixCpf ??
+
         user.cpf;
+
+
 
 
 
@@ -326,17 +378,28 @@ export async function POST(req: NextRequest) {
 
 
         return NextResponse.json(
+
           {
+
             error:
-            "Usuário sem CPF cadastrado"
+              "CPF obrigatório para PIX"
+
           },
+
           {
+
             status:400
+
           }
+
         );
 
 
       }
+
+
+
+
 
 
 
@@ -346,53 +409,70 @@ export async function POST(req: NextRequest) {
         await createPixTransfer({
 
           name:
+
             tx.pixName ??
+
             user.name,
+
 
 
           cpf,
 
 
+
           pixKey:
+
             tx.pixKey,
 
 
+
           amount:
-            tx.amount,
+
+            Number(tx.amount),
+
 
 
           description:
+
             "Saque Roleta da Sorte"
 
-
         });
+
+
 
 
 
       } catch(error) {
 
 
+
         console.error(
-          "Erro PIX:",
+          "PIX error:",
           error
         );
+
 
 
         return NextResponse.json(
 
           {
+
             error:
-            "Falha ao enviar PIX"
+              "Falha ao enviar PIX"
+
           },
 
           {
+
             status:500
+
           }
 
         );
 
 
       }
+
 
     }
 
@@ -402,61 +482,22 @@ export async function POST(req: NextRequest) {
 
 
 
+
     await db
+
       .update(transactions)
 
       .set({
 
         status:"completed",
 
-        updatedAt:new Date()
+        updatedAt:
+          new Date()
 
       })
 
       .where(
+
         eq(
+
           transactions.id,
-          tx.id
-        )
-      );
-
-
-
-
-
-    return NextResponse.json({
-
-      success:true,
-
-      action:"approved"
-
-    });
-
-
-
-
-
-  } catch(error) {
-
-
-    console.error(
-      "Admin withdrawal POST:",
-      error
-    );
-
-
-    return NextResponse.json(
-
-      {
-        error:"Erro interno"
-      },
-
-      {
-        status:500
-      }
-
-    );
-
-  }
-
-      }
