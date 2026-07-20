@@ -15,7 +15,6 @@ import {
 export const users = pgTable(
   "users",
   {
-
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
@@ -59,7 +58,6 @@ export const users = pgTable(
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull()
-
   }
 );
 
@@ -72,7 +70,6 @@ export const users = pgTable(
 export const transactions = pgTable(
   "transactions",
   {
-
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
@@ -109,54 +106,18 @@ export const transactions = pgTable(
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull()
-
   }
 );
 
 
 
 // =====================================
-// CONFIG GERAL STRIPE / ASAAS
-// =====================================
-
-export const appConfig = pgTable(
-  "app_config",
-  {
-
-    id: uuid("id")
-      .defaultRandom()
-      .primaryKey(),
-
-    stripeSecretKey: text("stripe_secret_key"),
-
-    stripeWebhookSecret: text("stripe_webhook_secret"),
-
-    asaasApiKey: text("asaas_api_key"),
-
-    asaasEnvironment: text("asaas_environment")
-      .default("sandbox"),
-
-    createdAt: timestamp("created_at")
-      .defaultNow()
-      .notNull(),
-
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull()
-
-  }
-);
-
-
-
-// =====================================
-// PAYPAL PAYOUT
+// PAYPAL PAYOUT CONFIG
 // =====================================
 
 export const paypalSettings = pgTable(
   "paypal_settings",
   {
-
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
@@ -180,7 +141,6 @@ export const paypalSettings = pgTable(
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull()
-
   }
 );
 
@@ -193,7 +153,6 @@ export const paypalSettings = pgTable(
 export const spins = pgTable(
   "spins",
   {
-
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
@@ -211,7 +170,6 @@ export const spins = pgTable(
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull()
-
   }
 );
 
@@ -224,7 +182,6 @@ export const spins = pgTable(
 export const affiliateReferrals = pgTable(
   "affiliate_referrals",
   {
-
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
@@ -242,15 +199,18 @@ export const affiliateReferrals = pgTable(
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull()
-      
+  }
+);
+
+
+
 // =====================================
-// APP CONFIG SETTINGS
+// APP CONFIG (STRIPE / ASAAS)
 // =====================================
 
 export const appConfig = pgTable(
   "app_config",
   {
-
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
@@ -268,6 +228,5 @@ export const appConfig = pgTable(
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull()
-
   }
 );
