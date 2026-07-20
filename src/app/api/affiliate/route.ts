@@ -33,9 +33,9 @@ export async function GET() {
       .where(eq(affiliateReferrals.userId, user.id));
 
     const levels: Record<string, number> = {
-      iniciante: 3,
-      intermediario: 5,
-      avancado: 7,
+      bronze: 3,
+      silver: 5,
+      gold: 7,
       master: 10,
     };
 
