@@ -5,11 +5,11 @@ import {
 
 
 
-// =================================
-// GERAR TOKEN OAUTH PAYPAL
-// =================================
+// =====================================
+// GERAR TOKEN PAYPAL
+// =====================================
 
-async function getPaypalAccessToken(){
+async function getAccessToken(){
 
 
   const config =
@@ -24,7 +24,7 @@ async function getPaypalAccessToken(){
 
 
 
-  const credentials =
+  const auth =
     Buffer
       .from(
         `${config.clientId}:${config.clientSecret}`
@@ -42,11 +42,10 @@ async function getPaypalAccessToken(){
 
         method:"POST",
 
-
         headers:{
 
           Authorization:
-            `Basic ${credentials}`,
+            `Basic ${auth}`,
 
 
           "Content-Type":
@@ -86,24 +85,20 @@ async function getPaypalAccessToken(){
 
 
 
-// =================================
-// CRIAR PAYPAL PAYOUT
-// =================================
+
+// =====================================
+// PAYPAL PAYOUT
+// =====================================
 
 interface PaypalPayoutParams {
 
-
   receiver:string;
-
 
   amount:number;
 
-
   currency?:string;
 
-
   note?:string;
-
 
 }
 
@@ -117,13 +112,14 @@ export async function createPaypalPayout(
 ){
 
 
+
   const config =
     await getPaypalConfig();
 
 
 
   const token =
-    await getPaypalAccessToken();
+    await getAccessToken();
 
 
 
@@ -134,9 +130,73 @@ export async function createPaypalPayout(
 
 
 
+
+
+  const payload = {
+
+
+    sender_batch_header:{
+
+      sender_batch_id:
+        `roleta-${Date.now()}`,
+
+
+      email_subject:
+        "Pagamento do saque Roleta da Sorte",
+
+
+      email_message:
+        "Seu saque foi enviado."
+
+    },
+
+
+
+    items:[{
+
+
+      recipient_type:
+        "EMAIL",
+
+
+      receiver:
+        params.receiver,
+
+
+
+      amount:{
+
+        value:
+          params.amount
+          .toFixed(2),
+
+
+        currency:
+          params.currency ||
+          "USD"
+
+      },
+
+
+      note:
+        params.note ||
+        "Saque Roleta da Sorte"
+
+
+    }]
+
+
+  };
+
+
+
+
+
   const response =
     await fetch(
+
       `${baseUrl}/v1/payments/payouts`,
+
       {
 
 
@@ -153,66 +213,14 @@ export async function createPaypalPayout(
           "Content-Type":
             "application/json"
 
+
         },
 
 
         body:
-          JSON.stringify({
-
-            sender_batch_header:{
-
-
-              sender_batch_id:
-                `ROULETTA-${Date.now()}`,
-
-
-              email_subject:
-                "Você recebeu um pagamento",
-
-
-              email_message:
-                "Seu saque foi enviado com sucesso."
-
-            },
-
-
-            items:[
-
-              {
-
-
-                recipient_type:
-                  "EMAIL",
-
-
-                amount:{
-
-
-                  value:
-                    params.amount
-                    .toFixed(2),
-
-
-                  currency:
-                    params.currency ||
-                    "USD"
-
-                },
-
-
-                receiver:
-                  params.receiver,
-
-
-                note:
-                  params.note ||
-                  "Saque RoletaApp"
-
-              }
-
-            ]
-
-          })
+          JSON.stringify(
+            payload
+          )
 
 
       }
@@ -221,8 +229,13 @@ export async function createPaypalPayout(
 
 
 
+
+
+
   const data =
     await response.json();
+
+
 
 
 
@@ -230,14 +243,18 @@ export async function createPaypalPayout(
 
 
     console.error(
-      "PAYPAL ERROR",
+      "PAYPAL PAYOUT ERROR:",
       data
     );
 
 
+
     throw new Error(
+
       data.message ||
-      "Erro ao criar payout PayPal"
+      data.name ||
+      "Erro ao enviar PayPal Payout"
+
     );
 
 
@@ -245,23 +262,32 @@ export async function createPaypalPayout(
 
 
 
+
+
+
   return {
 
 
     batchId:
+
       data.batch_header
-      ?.payout_batch_id,
+      ?.payout_batch_id
+      || null,
+
 
 
     status:
+
       data.batch_header
-      ?.batch_status,
+      ?.batch_status
+      || null,
 
 
-    raw:
+
+    response:
       data
+
 
   };
 
-
-    }
+}
