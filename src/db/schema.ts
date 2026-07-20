@@ -242,6 +242,32 @@ export const affiliateReferrals = pgTable(
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull()
+      
+// =====================================
+// APP CONFIG SETTINGS
+// =====================================
+
+export const appConfig = pgTable(
+  "app_config",
+  {
+
+    id: uuid("id")
+      .defaultRandom()
+      .primaryKey(),
+
+    key: text("key")
+      .notNull()
+      .unique(),
+
+    value: text("value"),
+
+    createdAt: timestamp("created_at")
+      .defaultNow()
+      .notNull(),
+
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .notNull()
 
   }
 );
