@@ -8,7 +8,6 @@ import {
 } from "drizzle-orm/pg-core";
 
 
-
 // =====================================
 // USERS
 // =====================================
@@ -21,83 +20,64 @@ export const users = pgTable(
       .defaultRandom()
       .primaryKey(),
 
-
     name: text("name")
       .notNull(),
-
 
     email: text("email")
       .notNull()
       .unique(),
 
-
     password: text("password")
       .notNull(),
-
 
     cpf: text("cpf"),
 
 
-
-    // carteira principal
+    // SALDOS
 
     balance: numeric("balance")
       .default("0")
       .notNull(),
-
-
-
-    // saldo bônus
 
     bonusBalance: numeric("bonus_balance")
       .default("0")
       .notNull(),
 
 
+    // FINANCEIRO
 
     totalDeposited: numeric("total_deposited")
       .default("0")
       .notNull(),
-
-
 
     totalWithdrawn: numeric("total_withdrawn")
       .default("0")
       .notNull(),
 
 
-
-
-    // afiliados
+    // AFILIADOS
 
     referralCode: text("referral_code"),
 
-
     affiliateCode: text("affiliate_code"),
-
 
     affiliateLevel: text("affiliate_level")
       .default("bronze")
       .notNull(),
 
-
     referredBy: text("referred_by"),
 
 
-
+    // ADMIN
 
     isAdmin: boolean("is_admin")
       .default(false)
       .notNull(),
 
 
-
-
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-
-
 
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -105,7 +85,6 @@ export const users = pgTable(
 
   }
 );
-
 
 
 
@@ -122,20 +101,16 @@ export const transactions = pgTable(
       .defaultRandom()
       .primaryKey(),
 
-
     userId: uuid("user_id")
       .notNull(),
-
 
 
     type: text("type")
       .notNull(),
 
 
-
     amount: numeric("amount")
       .notNull(),
-
 
 
     status: text("status")
@@ -154,27 +129,22 @@ export const transactions = pgTable(
 
 
 
-
     // PAYPAL
 
     paypalEmail: text("paypal_email"),
 
 
 
-
     externalId: text("external_id"),
-
 
 
     description: text("description"),
 
 
 
-
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-
 
 
     updatedAt: timestamp("updated_at")
@@ -187,11 +157,9 @@ export const transactions = pgTable(
 
 
 
-
-
 // =====================================
-// APP CONFIG ADMIN
-// KEY / VALUE
+// APP CONFIG
+// ADMIN + STRIPE + ASAAS
 // =====================================
 
 export const appConfig = pgTable(
@@ -203,6 +171,10 @@ export const appConfig = pgTable(
       .primaryKey(),
 
 
+
+    // CONFIG KEY/VALUE
+    // usado pelo /admin/config
+
     key: text("key")
       .notNull()
       .unique(),
@@ -210,6 +182,22 @@ export const appConfig = pgTable(
 
     value: text("value"),
 
+
+
+    // STRIPE
+
+    stripeSecretKey: text("stripe_secret_key"),
+
+    stripeWebhookSecret: text("stripe_webhook_secret"),
+
+
+
+    // ASAAS
+
+    asaasApiKey: text("asaas_api_key"),
+
+    asaasEnvironment: text("asaas_environment")
+      .default("sandbox"),
 
 
 
@@ -225,7 +213,6 @@ export const appConfig = pgTable(
 
   }
 );
-
 
 
 
@@ -245,15 +232,12 @@ export const paypalSettings = pgTable(
       .primaryKey(),
 
 
-
     clientId: text("client_id")
       .notNull(),
 
 
-
     clientSecret: text("client_secret")
       .notNull(),
-
 
 
     mode: text("mode")
@@ -261,9 +245,7 @@ export const paypalSettings = pgTable(
       .notNull(),
 
 
-
     senderEmail: text("sender_email"),
-
 
 
 
@@ -272,14 +254,12 @@ export const paypalSettings = pgTable(
       .notNull(),
 
 
-
     updatedAt: timestamp("updated_at")
       .defaultNow()
       .notNull(),
 
   }
 );
-
 
 
 
@@ -299,21 +279,17 @@ export const spins = pgTable(
       .primaryKey(),
 
 
-
     userId: uuid("user_id")
       .notNull(),
-
 
 
     prize: text("prize")
       .notNull(),
 
 
-
     amount: numeric("amount")
       .default("0")
       .notNull(),
-
 
 
 
@@ -323,7 +299,6 @@ export const spins = pgTable(
 
   }
 );
-
 
 
 
@@ -343,21 +318,17 @@ export const affiliateReferrals = pgTable(
       .primaryKey(),
 
 
-
     userId: uuid("user_id")
       .notNull(),
-
 
 
     referredUserId: uuid("referred_user_id")
       .notNull(),
 
 
-
     commission: numeric("commission")
       .default("0")
       .notNull(),
-
 
 
 
