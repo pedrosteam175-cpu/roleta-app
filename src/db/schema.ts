@@ -4,10 +4,8 @@ import {
   text,
   timestamp,
   numeric,
-  boolean,
-  integer
+  boolean
 } from "drizzle-orm/pg-core";
-
 
 
 // =====================================
@@ -34,36 +32,29 @@ export const users = pgTable(
 
     cpf: text("cpf"),
 
-
     balance: numeric("balance")
       .default("0")
       .notNull(),
-
 
     totalDeposited: numeric("total_deposited")
       .default("0")
       .notNull(),
 
-
     totalWithdrawn: numeric("total_withdrawn")
       .default("0")
       .notNull(),
-
 
     referralCode: text("referral_code"),
 
     referredBy: text("referred_by"),
 
-
     isAdmin: boolean("is_admin")
       .default(false)
       .notNull(),
 
-
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-
 
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -71,8 +62,6 @@ export const users = pgTable(
 
   }
 );
-
-
 
 
 
@@ -88,46 +77,34 @@ export const transactions = pgTable(
       .defaultRandom()
       .primaryKey(),
 
-
     userId: uuid("user_id")
       .notNull(),
-
 
     type: text("type")
       .notNull(),
 
-
     amount: numeric("amount")
       .notNull(),
-
 
     status: text("status")
       .default("pending")
       .notNull(),
 
-
     pixKey: text("pix_key"),
-
 
     pixName: text("pix_name"),
 
-
     pixCpf: text("pix_cpf"),
-
 
     paypalEmail: text("paypal_email"),
 
-
     externalId: text("external_id"),
 
-
     description: text("description"),
-
 
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-
 
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -138,11 +115,8 @@ export const transactions = pgTable(
 
 
 
-
-
-
 // =====================================
-// CONFIG GERAL (STRIPE + ASAAS)
+// CONFIG GERAL STRIPE / ASAAS
 // =====================================
 
 export const appConfig = pgTable(
@@ -153,24 +127,18 @@ export const appConfig = pgTable(
       .defaultRandom()
       .primaryKey(),
 
-
     stripeSecretKey: text("stripe_secret_key"),
-
 
     stripeWebhookSecret: text("stripe_webhook_secret"),
 
-
     asaasApiKey: text("asaas_api_key"),
-
 
     asaasEnvironment: text("asaas_environment")
       .default("sandbox"),
 
-
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-
 
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -178,9 +146,6 @@ export const appConfig = pgTable(
 
   }
 );
-
-
-
 
 
 
@@ -196,27 +161,21 @@ export const paypalSettings = pgTable(
       .defaultRandom()
       .primaryKey(),
 
-
     clientId: text("client_id")
       .notNull(),
 
-
     clientSecret: text("client_secret")
       .notNull(),
-
 
     mode: text("mode")
       .default("sandbox")
       .notNull(),
 
-
     senderEmail: text("sender_email"),
-
 
     createdAt: timestamp("created_at")
       .defaultNow()
       .notNull(),
-
 
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -227,11 +186,8 @@ export const paypalSettings = pgTable(
 
 
 
-
-
-
 // =====================================
-// SPINS DA ROLETA
+// SPINS ROLETA
 // =====================================
 
 export const spins = pgTable(
@@ -242,19 +198,15 @@ export const spins = pgTable(
       .defaultRandom()
       .primaryKey(),
 
-
     userId: uuid("user_id")
       .notNull(),
-
 
     prize: text("prize")
       .notNull(),
 
-
     amount: numeric("amount")
       .default("0")
       .notNull(),
-
 
     createdAt: timestamp("created_at")
       .defaultNow()
@@ -265,34 +217,27 @@ export const spins = pgTable(
 
 
 
-
-
-
 // =====================================
 // AFILIADOS
 // =====================================
 
-export const affiliates = pgTable(
-  "affiliates",
+export const affiliateReferrals = pgTable(
+  "affiliate_referrals",
   {
 
     id: uuid("id")
       .defaultRandom()
       .primaryKey(),
 
-
     userId: uuid("user_id")
       .notNull(),
-
 
     referredUserId: uuid("referred_user_id")
       .notNull(),
 
-
     commission: numeric("commission")
       .default("0")
       .notNull(),
-
 
     createdAt: timestamp("created_at")
       .defaultNow()
