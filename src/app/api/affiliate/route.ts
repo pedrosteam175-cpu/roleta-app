@@ -1,63 +1,60 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users, affiliateReferrals } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import { getCurrentUser } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { verifyPassword, createSession } from "@/lib/auth";
 
-export async function GET() {
+export async function POST(req: NextRequest) {
   try {
-    const authUser = await getCurrentUser();
+    const { email, password } = await req.json();
 
-    if (!authUser) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Não autenticado' },
-        { status: 401 }
+        { error: "E-mail e senha são obrigatórios" },
+        { status: 400 }
       );
     }
 
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, authUser.id));
+      .where(eq(users.email, email));
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Não encontrado' },
-        { status: 404 }
+        { error: "E-mail ou senha inválidos" },
+        { status: 401 }
       );
     }
 
-    const referrals = await db
-      .select()
-      .from(affiliateReferrals)
-      .where(eq(affiliateReferrals.userId, user.id));
+    const valid = await verifyPassword(password, user.password);
 
-    const levels: Record<string, number> = {
-      bronze: 3,
-      silver: 5,
-      gold: 7,
-      master: 10,
-    };
+    if (!valid) {
+      return NextResponse.json(
+        { error: "E-mail ou senha inválidos" },
+        { status: 401 }
+      );
+    }
 
-    const commission = levels[user.affiliateLevel] ?? 3;
-
-    const earnings = referrals
-      .reduce((total, referral) => total + Number(referral.commission), 0)
-      .toString();
+    const token = await createSession(user.id);
 
     return NextResponse.json({
-      affiliateCode: user.affiliateCode,
-      affiliateLevel: user.affiliateLevel,
-      commission,
-      totalReferrals: referrals.length,
-      earnings,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL ?? '',
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        balance: user.balance,
+        bonusBalance: user.bonusBalance,
+        isAdmin: user.isAdmin,
+      },
     });
-  } catch (err) {
-    console.error('Affiliate error:', err);
+  } catch (error) {
+    console.error("Login error:", error);
 
     return NextResponse.json(
-      { error: 'Erro interno' },
+      { error: "Erro interno" },
       { status: 500 }
     );
   }
