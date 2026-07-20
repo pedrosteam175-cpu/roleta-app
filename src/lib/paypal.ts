@@ -1,146 +1,267 @@
-// src/lib/paypal.ts
-
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID!;
-const PAYPAL_SECRET = process.env.PAYPAL_SECRET!;
-
-const PAYPAL_BASE =
-  process.env.PAYPAL_MODE === 'live'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
+import {
+  getPaypalConfig,
+  getPaypalBaseUrl
+} from "@/lib/paypal-config";
 
 
 
-async function getAccessToken() {
+// =================================
+// GERAR TOKEN OAUTH PAYPAL
+// =================================
 
-  const auth =
-    Buffer.from(
-      `${PAYPAL_CLIENT_ID}:${PAYPAL_SECRET}`
-    ).toString('base64');
-
-
-  const res = await fetch(
-    `${PAYPAL_BASE}/v1/oauth2/token`,
-    {
-      method:'POST',
-      headers:{
-        Authorization:`Basic ${auth}`,
-        'Content-Type':
-          'application/x-www-form-urlencoded'
-      },
-      body:
-        'grant_type=client_credentials'
-    }
-  );
+async function getPaypalAccessToken(){
 
 
-  const data = await res.json();
+  const config =
+    await getPaypalConfig();
 
 
-  if(!data.access_token){
-    throw new Error(
-      'Falha ao autenticar PayPal'
+
+  const baseUrl =
+    getPaypalBaseUrl(
+      config.mode
     );
-  }
-
-
-  return data.access_token;
-}
 
 
 
-export async function createPaypalPayout({
-
-  email,
-  amount
-
-}:{
-
-  email:string;
-  amount:number;
-
-}) {
-
-
-  const token =
-    await getAccessToken();
+  const credentials =
+    Buffer
+      .from(
+        `${config.clientId}:${config.clientSecret}`
+      )
+      .toString(
+        "base64"
+      );
 
 
 
-  const res = await fetch(
-    `${PAYPAL_BASE}/v1/payments/payouts`,
-    {
-      method:'POST',
+  const response =
+    await fetch(
+      `${baseUrl}/v1/oauth2/token`,
+      {
 
-      headers:{
-        Authorization:
-          `Bearer ${token}`,
-
-        'Content-Type':
-          'application/json'
-      },
+        method:"POST",
 
 
-      body:JSON.stringify({
+        headers:{
 
-        sender_batch_header:{
+          Authorization:
+            `Basic ${credentials}`,
 
-          sender_batch_id:
-            `withdraw-${Date.now()}`,
 
-          email_subject:
-            'Você recebeu um pagamento',
+          "Content-Type":
+            "application/x-www-form-urlencoded"
 
         },
 
 
-        items:[{
+        body:
+          "grant_type=client_credentials"
 
-          recipient_type:'EMAIL',
-
-          amount:{
-            value:
-              amount.toFixed(2),
-
-            currency:
-              'USD'
-          },
-
-          receiver:
-            email,
-
-          note:
-            'Saque Roleta da Sorte'
-
-        }]
-
-      })
-
-    }
-  );
+      }
+    );
 
 
 
   const data =
-    await res.json();
+    await response.json();
 
 
 
-  if(!res.ok){
-
-    console.error(
-      'PayPal payout error',
-      data
-    );
+  if(!response.ok){
 
     throw new Error(
-      data.message ||
-      'Erro PayPal'
+      data.error_description ||
+      "Erro ao autenticar PayPal"
     );
 
   }
 
 
 
-  return data;
+  return data.access_token;
 
-        }
+}
+
+
+
+
+// =================================
+// CRIAR PAYPAL PAYOUT
+// =================================
+
+interface PaypalPayoutParams {
+
+
+  receiver:string;
+
+
+  amount:number;
+
+
+  currency?:string;
+
+
+  note?:string;
+
+
+}
+
+
+
+
+export async function createPaypalPayout(
+
+ params:PaypalPayoutParams
+
+){
+
+
+  const config =
+    await getPaypalConfig();
+
+
+
+  const token =
+    await getPaypalAccessToken();
+
+
+
+  const baseUrl =
+    getPaypalBaseUrl(
+      config.mode
+    );
+
+
+
+  const response =
+    await fetch(
+      `${baseUrl}/v1/payments/payouts`,
+      {
+
+
+        method:"POST",
+
+
+        headers:{
+
+
+          Authorization:
+            `Bearer ${token}`,
+
+
+          "Content-Type":
+            "application/json"
+
+        },
+
+
+        body:
+          JSON.stringify({
+
+            sender_batch_header:{
+
+
+              sender_batch_id:
+                `ROULETTA-${Date.now()}`,
+
+
+              email_subject:
+                "Você recebeu um pagamento",
+
+
+              email_message:
+                "Seu saque foi enviado com sucesso."
+
+            },
+
+
+            items:[
+
+              {
+
+
+                recipient_type:
+                  "EMAIL",
+
+
+                amount:{
+
+
+                  value:
+                    params.amount
+                    .toFixed(2),
+
+
+                  currency:
+                    params.currency ||
+                    "USD"
+
+                },
+
+
+                receiver:
+                  params.receiver,
+
+
+                note:
+                  params.note ||
+                  "Saque RoletaApp"
+
+              }
+
+            ]
+
+          })
+
+
+      }
+
+    );
+
+
+
+  const data =
+    await response.json();
+
+
+
+  if(!response.ok){
+
+
+    console.error(
+      "PAYPAL ERROR",
+      data
+    );
+
+
+    throw new Error(
+      data.message ||
+      "Erro ao criar payout PayPal"
+    );
+
+
+  }
+
+
+
+  return {
+
+
+    batchId:
+      data.batch_header
+      ?.payout_batch_id,
+
+
+    status:
+      data.batch_header
+      ?.batch_status,
+
+
+    raw:
+      data
+
+  };
+
+
+    }
