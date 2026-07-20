@@ -7,21 +7,41 @@ import { verifyPassword, signJwt } from '@/lib/auth';
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
+
     if (!email || !password) {
-      return NextResponse.json({ error: 'E-mail e senha são obrigatórios' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'E-mail e senha são obrigatórios' },
+        { status: 400 }
+      );
     }
 
-    const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email.toLowerCase()));
+
     if (!user) {
-      return NextResponse.json({ error: 'E-mail ou senha inválidos' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'E-mail ou senha inválidos' },
+        { status: 401 }
+      );
     }
 
-    const valid = await verifyPassword(password, user.passwordHash);
+    // CORREÇÃO AQUI
+    const valid = await verifyPassword(password, user.password);
+
     if (!valid) {
-      return NextResponse.json({ error: 'E-mail ou senha inválidos' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'E-mail ou senha inválidos' },
+        { status: 401 }
+      );
     }
 
-    const token = await signJwt({ id: user.id, email: user.email, name: user.name });
+    const token = await signJwt({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    });
 
     const response = NextResponse.json({
       success: true,
@@ -34,10 +54,21 @@ export async function POST(req: NextRequest) {
         affiliateCode: user.affiliateCode,
       },
     });
-    response.cookies.set('auth_token', token, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 3600, path: '/' });
+
+    response.cookies.set('auth_token', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 3600,
+      path: '/',
+    });
+
     return response;
   } catch (err) {
     console.error('Login error:', err);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+
+    return NextResponse.json(
+      { error: 'Erro interno do servidor' },
+      { status: 500 }
+    );
   }
 }
