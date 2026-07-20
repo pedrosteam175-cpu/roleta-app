@@ -501,3 +501,26 @@ export async function POST(req: NextRequest) {
         eq(
 
           transactions.id,
+tx.id
+    )
+  );
+
+return NextResponse.json({
+  success: true,
+  action: "approved",
+});
+
+} catch (error) {
+  console.error("withdrawals POST error:", error);
+
+  return NextResponse.json(
+    {
+      error: "Erro interno",
+    },
+    {
+      status: 500,
+    }
+  );
+}
+
+}
