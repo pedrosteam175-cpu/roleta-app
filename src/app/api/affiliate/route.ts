@@ -41,12 +41,16 @@ export async function GET() {
 
     const commission = levels[user.affiliateLevel] ?? 3;
 
+    const earnings = referrals
+      .reduce((total, referral) => total + Number(referral.commission), 0)
+      .toString();
+
     return NextResponse.json({
       affiliateCode: user.affiliateCode,
       affiliateLevel: user.affiliateLevel,
       commission,
       totalReferrals: referrals.length,
-      earnings: user.affiliateEarnings,
+      earnings,
       appUrl: process.env.NEXT_PUBLIC_APP_URL ?? '',
     });
   } catch (err) {
